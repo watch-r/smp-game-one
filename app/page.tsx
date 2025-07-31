@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
 export default function Home() {
@@ -6,7 +7,7 @@ export default function Home() {
             <body className="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center px-4 py-8">
                 {/* <!-- Game Title --> */}
                 <img
-                    src="../assets/img/eyespy-killer-game-horizontal.png"
+                    src="public/eyespy-killer-game-horizontal.png"
                     alt="EyeSpy: Killer Game Logo"
                     className="h-30 mx-auto rounded-3xl mb-4 justify-center"
                 />
@@ -15,9 +16,7 @@ export default function Home() {
                 </p>
 
                 <div className="flex flex-col space-y-4">
-                    <button className="bg-red-600 hover:bg-red-700 rounded p-3 font-semibold">
-                        🎮 Host Game
-                    </button>
+                    <Button className="p-3">🎮 Host Game</Button>
 
                     <button className="bg-blue-600 hover:bg-blue-700 rounded p-3 font-semibold">
                         🤝 Join Game
