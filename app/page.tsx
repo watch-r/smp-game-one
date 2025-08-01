@@ -20,7 +20,7 @@ export default function Home() {
                     <CardTitle>
                         <Image
                             src="/img/eyespy-killer-game-horizontal.png"
-                            width={300}
+                            width={500}
                             height={100}
                             alt="EyeSpy: Killer Game Logo"
                             style={{ height: "auto" }}
