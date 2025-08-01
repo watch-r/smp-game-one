@@ -4,11 +4,12 @@ import { Button } from "./button";
 import { useRouter } from "next/navigation";
 
 const HostButton = () => {
+    const router = useRouter();
     return (
         <Button
             variant={"secondary"}
             size={"lg"}
-            onClick={() => useRouter().push("/room/create")}
+            onClick={() => router.push("/room/create")}
         >
             🎮 Host Game
         </Button>
