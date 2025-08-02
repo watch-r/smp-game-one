@@ -13,7 +13,9 @@ export async function POST(request: NextRequest) {
         }
 
         // Create a new room in the database
-        const code = Math.random().toString(36).substring(2, 8).toUpperCase(); // Generate a random code
+        // Generate a random code
+        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+
         const { error: roomError } = await supabaseAdmin.from("rooms").insert({
             code,
             game_status: "waiting", // Initial status
@@ -38,12 +40,17 @@ export async function POST(request: NextRequest) {
             console.error("Error creating player:", playerError);
             return new Response("Player Creation Failed", { status: 500 });
         }
-
+        const { data, error } = await supabaseAdmin
+            .from("players")
+            .select("id")
+            .eq("room_code", code)
+            .eq("name", name)
+            .single();
         // Return the room code and initial game status
         return NextResponse.json(
             {
+                playerId: data?.id, // Return the player's ID
                 code,
-                game_status: "waiting",
             },
             { status: 201 }
         );
