@@ -14,11 +14,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { usePlayer } from "@/context/PlayerContext";
+// import { usePlayer } from "@/context/PlayerContext";
 const createRoomPage = () => {
     const [name, setName] = useState("");
     const router = useRouter();
-    const { player, setPlayer } = usePlayer();
+    // const { player, setPlayer } = usePlayer();
 
     const handleCreateRoom = async () => {
         if (name.trim() === "") {
@@ -35,8 +35,8 @@ const createRoomPage = () => {
         const data = await res.json();
 
         if (res.ok) {
-            setPlayer({ id: data.playerId, name, isHost: true });
-            router.push(`/room/${data.code}/lobby`);
+            // setPlayer({ id: data.playerId, name, isHost: true });
+            router.push(`/room/${data.code}/lobby?pid=${data.playerId}`);
         } else {
             alert(data.error || "Room creation failed.");
         }
@@ -79,7 +79,7 @@ const createRoomPage = () => {
                         onClick={handleCreateRoom}
                         className="w-full text-blue-50"
                     >
-                        Submit
+                        Create
                     </Button>
                     <div className="flex flex-col items-center justify-center space-y-1">
                         <p className="text-gray-400">

@@ -69,9 +69,18 @@ export async function POST(request: NextRequest) {
                 { status: 500 }
             );
         }
-
+        const { data, error } = await supabaseAdmin
+            .from("players")
+            .select("id")
+            .eq("room_code", roomCode)
+            .eq("name", name)
+            .single();
         return NextResponse.json(
-            { message: "Successfully joined the room", roomCode },
+            {
+                playerId: data?.id, // Return the player's ID
+                roomCode,
+                message: "Successfully joined the room",
+            },
             { status: 200 }
         );
     } catch (error) {

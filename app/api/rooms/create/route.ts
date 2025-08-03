@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
             {
                 playerId: data?.id, // Return the player's ID
                 code,
-            },
+            }, 
             { status: 201 }
         );
     } catch (error) {
