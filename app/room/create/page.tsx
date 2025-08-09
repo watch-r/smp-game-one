@@ -26,7 +26,7 @@ const createRoomPage = () => {
             return;
         }
 
-        const res = await fetch("/api/rooms/create", {
+        const res = await fetch("/api/eyespy/rooms/create", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name }),

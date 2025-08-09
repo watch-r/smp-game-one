@@ -25,7 +25,7 @@ const JoinPage = () => {
             return;
         }
 
-        const res = await fetch("/api/rooms/join", {
+        const res = await fetch("/api/eyespy/rooms/join", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name, roomCode }),
