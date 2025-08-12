@@ -6,14 +6,8 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import clsx from "clsx";
 import { Badge } from "@/components/ui/badge";
-
-// ✅ Typing for clarity
-type Player = {
-    id: string;
-    name: string;
-    role: "police" | "killer" | "civilian";
-    is_alive: boolean;
-};
+import { ApiResponse, Player } from "@/types/types";
+import { api } from "@/lib/api";
 
 const GamePage = () => {
     const { roomCode } = useParams<{ roomCode: string }>();
@@ -24,7 +18,7 @@ const GamePage = () => {
         null
     );
     const [isAlive, setIsAlive] = useState(true);
-    const [players, setPlayers] = useState<Player[]>([]);
+    const [players, setPlayers] = useState<player[]>([]);
     const [isFlipped, setIsFlipped] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -37,19 +31,12 @@ const GamePage = () => {
     const fetchRole = async () => {
         if (!pid) return;
         setLoading(true);
+
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/players?id=eq.${pid}`,
-                {
-                    headers: {
-                        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-                        Authorization: `Bearer ${process.env
-                            .NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!}`,
-                    },
-                }
-            );
-            const data = await res.json();
-            if (data.length > 0) {
+            const res = await fetch(`/api/eyespy/player?pid=${pid}`);
+            const { success, data } = await res.json();
+
+            if (success && data.length > 0) {
                 const player = data[0];
                 setRole(player.role);
                 setIsAlive(player.is_alive);
@@ -67,18 +54,10 @@ const GamePage = () => {
 
     const fetchOtherPlayers = async () => {
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/players?room_code=eq.${roomCode}&is_alive=eq.true&role=neq.police`,
-                {
-                    headers: {
-                        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-                        Authorization: `Bearer ${process.env
-                            .NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-                    },
-                }
-            );
-            const data = await res.json();
-            setPlayers(data);
+            const { success, data }: ApiResponse<Player[]> =
+                await api.players.listAlive(roomCode);
+
+            if (success) setPlayers(data); // data is fully typed as Player[]
         } catch (err) {
             console.error("Failed to fetch players", err);
         }
@@ -86,20 +65,8 @@ const GamePage = () => {
 
     const handleDeathUpdate = async (dead: boolean) => {
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/players?id=eq.${pid}`,
-                {
-                    method: "PATCH",
-                    headers: {
-                        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-                        Authorization: `Bearer ${process.env
-                            .NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ is_alive: !dead }),
-                }
-            );
-            if (res.ok) {
+            const { success } = await api.players.updateAlive(pid!, dead);
+            if (success) {
                 setIsAlive(!dead);
                 if (role === "police") await fetchOtherPlayers();
             } else {
@@ -113,34 +80,16 @@ const GamePage = () => {
 
     const handleSuspectSelection = async (suspectId: string) => {
         if (!roomCode) return;
-        try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/players?room_code=eq.${roomCode}&role=eq.killer`,
-                {
-                    headers: {
-                        apikey: process.env
-                            .NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!,
-                        Authorization: `Bearer ${process.env
-                            .NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-                    },
-                }
-            );
-            const data = await res.json();
-            if (data.length === 0) {
-                alert("No killer found in this room!");
-                return;
-            }
-
-            const killer = data[0];
-            if (killer.id === suspectId) {
-                alert("✅ You caught the killer! Civilians and Police win!");
-            } else {
-                alert("❌ Wrong guess. Killer wins!");
-            }
-        } catch (error) {
-            console.error("Failed to check suspect:", error);
-            alert("Something went wrong when checking the suspect.");
-        }
+        const { success, correct } = await api.players.checkSuspect(
+            roomCode,
+            suspectId
+        );
+        if (!success) return alert("Error checking suspect");
+        alert(
+            correct
+                ? "✅ You caught the killer!"
+                : "❌ Wrong guess. Killer wins!"
+        );
     };
 
     return (
@@ -150,7 +99,7 @@ const GamePage = () => {
             </h1>
 
             {/* Card Reveal */}
-            <motion.div className="relative w-64 h-96 perspective">
+            <motion.div className="relative w-76 h-96 perspective">
                 <motion.div
                     className={clsx(
                         "absolute w-full h-full rounded-2xl shadow-xl transition-transform duration-700",
